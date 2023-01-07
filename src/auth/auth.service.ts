@@ -1,40 +1,60 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
+import { UserService } from 'src/users/user.service';
 import { Repository } from 'typeorm';
-import { UserDetails } from './types/UserDetails';
+import { CreateUserDto } from '../users/types/createUser.dto';
+import { compare } from 'bcrypt';
+import { HttpException } from '@nestjs/common/exceptions';
+import { HttpStatus } from '@nestjs/common/enums';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User) private readonly userRepostory: Repository<User>,
+    @Inject(UserService) private readonly userService: UserService,
   ) {}
-  async validateUser(userDetails: UserDetails): Promise<User> {
-    const user = await this.userRepostory.findOne({
+  async googleValidateUser(createUserDto: CreateUserDto): Promise<User> {
+    const userByEmail = await this.userRepostory.findOne({
       where: {
-        email: userDetails.email,
+        email: createUserDto.email,
       },
     });
 
-    if (user) return user;
+    if (userByEmail) return userByEmail;
 
-    const newUser = await this.userRepostory.create(userDetails);
-    newUser.password = '';
+    const newUser = await this.userRepostory.create(createUserDto);
 
     const response = await this.userRepostory.save(newUser);
     delete response.password;
-    console.log(response);
-
     return response;
   }
 
-  async findUser(id: number): Promise<User> {
-    const user = await this.userRepostory.findOne({
+  async localeValidateUser(createUserDto: CreateUserDto) {
+    const userByUsername = await this.userRepostory.findOne({
       where: {
-        id,
+        username: createUserDto.username,
       },
     });
 
-    return user;
+    const isCorrectPassword = compare(
+      createUserDto.password,
+      userByUsername.password,
+    );
+
+    if (!userByUsername) {
+      throw new HttpException(
+        'Username or password not correct',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+
+    if (userByUsername && isCorrectPassword) {
+      delete userByUsername.password;
+
+      return userByUsername;
+    }
+
+    return null;
   }
 }
