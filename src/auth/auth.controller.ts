@@ -8,11 +8,10 @@ import {
   Post,
   Body,
 } from '@nestjs/common';
-import { AuthenticatedGuard } from './utils/auth.guard';
+import { AuthenticatedGuard } from './utils/guards/auth.guard';
 import { Request } from 'express';
-import { GoogleAuthGuard } from './utils/googleAuth.guard';
-import { AuthGuard } from '@nestjs/passport';
-import { LocalAuthGuard } from './utils/localAuth.guard';
+import { GoogleAuthGuard } from './utils/guards/googleAuth.guard';
+import { LocalAuthGuard } from './utils/guards/localAuth.guard';
 
 @Controller('auth')
 export class AuthController {

@@ -37,17 +37,17 @@ export class AuthService {
       },
     });
 
-    const isCorrectPassword = compare(
-      createUserDto.password,
-      userByUsername.password,
-    );
-
     if (!userByUsername) {
       throw new HttpException(
         'Username or password not correct',
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
+
+    const isCorrectPassword = compare(
+      createUserDto.password,
+      userByUsername.password,
+    );
 
     if (userByUsername && isCorrectPassword) {
       delete userByUsername.password;

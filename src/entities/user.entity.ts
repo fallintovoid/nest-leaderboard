@@ -33,8 +33,8 @@ export class User {
   @Column({ type: 'simple-array', default: [] })
   purchaseHistory: any[];
 
-  @Column({ type: 'simple-array', default: [] })
-  pointsHistory: any[];
+  @Column({ type: 'simple-array' })
+  pointsHistory: string[];
 
   @BeforeInsert()
   async hashPassword() {
